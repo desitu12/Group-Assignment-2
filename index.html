@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UK Accident Data</title>
+
+  <style>
+    :root{
+      --bg: #1f1f1f;
+      --panel: #262626;
+      --border: #3a3a3a;
+      --text: #eaeaea;
+      --muted: #bdbdbd;
+      --activeRed: #ff4b4b;
+      --shadow: rgba(0,0,0,0.35);
+      --glow: rgba(255,255,255,0.25);
+
+      --thumbSize: 18px;
+      --thumbHalf: 9px;
+    }
+
+    *{ box-sizing: border-box; }
+
+    html, body{
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, Arial, sans-serif;
+    }
+
+    .app{
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-rows: minmax(110px, 11vh) 1fr;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .header{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 8px;
+      box-shadow: 0 8px 20px var(--shadow);
+    }
+
+    .titleRow{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    h1{
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .subtitle{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .sliderBar{
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .allYearBtn{
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #2d2d2d;
+      color: var(--text);
+      font-weight: 750;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .allYearBtn[aria-pressed="true"]{
+      color: var(--activeRed);
+      font-weight: 900;
+      box-shadow: 0 0 0 2px var(--glow);
+    }
+
+    .sliderWrap{
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .rangeTrack{
+      width: calc(100% - var(--thumbSize));
+      margin-left: var(--thumbHalf);
+    }
+
+    input[type="range"]{
+      width: 100%;
+      height: 6px;
+      appearance: none;
+      background: #3a3a3a;
+      border-radius: 999px;
+      outline: none;
+      display: block;
+    }
+
+    input[type="range"]::-webkit-slider-thumb{
+      appearance: none;
+      width: var(--thumbSize);
+      height: var(--thumbSize);
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      border: 2px solid #00000040;
+    }
+
+    input[type="range"]::-moz-range-thumb{
+      width: var(--thumbSize);
+      height: var(--thumbSize);
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      border: 2px solid #00000040;
+    }
+
+    .monthLabels{
+      width: calc(100% - var(--thumbSize));
+      margin-left: var(--thumbHalf);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0;
+    }
+
+    .monthLabel{
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1;
+      user-select: none;
+      white-space: nowrap;
+      cursor: pointer;
+      transform: translateY(1px);
+    }
+
+    .monthLabel.active{
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--activeRed);
+    }
+
+    .dashboard{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 12px;
+      min-height: 0;
+      min-width: 0;
+    }
+
+    .panel{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 8px;
+      box-shadow: 0 8px 20px var(--shadow);
+      min-height: 0;
+      min-width: 0;
+    }
+
+    #mapPanel{ grid-row: 1 / span 2; }
+
+    .panelHeader{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .panelTitle{
+      font-size: 14px;
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fsBtn{
+      height: 30px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #2d2d2d;
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .vizSlot{
+      border: 1px dashed #4a4a4a;
+      border-radius: 10px;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard.fullscreen > .panel{ display: none; }
+    .dashboard.fullscreen > .panel.isFullscreen{
+      display: grid !important;
+      grid-column: 1 / -1;
+      grid-row: 1 / -1;
+    }
+
+    /* tooltip */
+    .tooltip{
+      position: absolute;
+      pointer-events: none;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.08s linear;
+      z-index: 10;
+      max-width: 260px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <header class="header">
+      <div class="titleRow">
+        <h1>UK Accident Data</h1>
+        <div class="subtitle">Fullscreen dashboard with shared time slider</div>
+      </div>
+
+      <div class="sliderBar">
+        <button id="allYearBtn" class="allYearBtn" aria-pressed="true">All Year</button>
+
+        <div class="sliderWrap">
+          <div class="rangeTrack">
+            <input id="monthSlider" type="range" min="0" max="11" step="1" value="0">
+          </div>
+
+          <div id="monthLabels" class="monthLabels" aria-label="Months">
+            <div class="monthLabel" data-month="0">Jan</div>
+            <div class="monthLabel" data-month="1">Feb</div>
+            <div class="monthLabel" data-month="2">Mar</div>
+            <div class="monthLabel" data-month="3">Apr</div>
+            <div class="monthLabel" data-month="4">May</div>
+            <div class="monthLabel" data-month="5">Jun</div>
+            <div class="monthLabel" data-month="6">Jul</div>
+            <div class="monthLabel" data-month="7">Aug</div>
+            <div class="monthLabel" data-month="8">Sep</div>
+            <div class="monthLabel" data-month="9">Oct</div>
+            <div class="monthLabel" data-month="10">Nov</div>
+            <div class="monthLabel" data-month="11">Dec</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard" id="dashboard">
+      <section class="panel" id="mapPanel">
+        <div class="panelHeader">
+          <div class="panelTitle">UK Map</div>
+          <button class="fsBtn" data-fs="map">Fullscreen</button>
+        </div>
+        <div class="vizSlot" id="mapSlot"></div>
+      </section>
+
+      <section class="panel" id="heatmapPanel">
+        <div class="panelHeader">
+          <div class="panelTitle">Heatmap</div>
+          <button class="fsBtn" data-fs="heatmap">Fullscreen</button>
+        </div>
+        <div class="vizSlot" id="heatmapSlot">
+          <div class="tooltip" id="heatTooltip"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="thirdPanel">
+        <div class="panelHeader">
+          <div class="panelTitle">Third Visualization</div>
+          <button class="fsBtn" data-fs="third">Fullscreen</button>
+        </div>
+        <div class="vizSlot" id="thirdSlot"></div>
+      </section>
+    </main>
+
+  </div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="js/heatmap.js" defer></script>
+  <script src="js/main.js" defer></script>
+</body>
+</html>
